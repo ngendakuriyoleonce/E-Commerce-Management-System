@@ -26,6 +26,8 @@ class OrderForm
             ->components([
                 Group::make()->components([
                     Section::make('Order Information')->components([
+                        Hidden::make('order_number')
+                        ->default('ORD-' . now()->format('YmdHis') . '-' . strtoupper(\Illuminate\Support\Str::random(4))),
                         Select::make('user_id')
                         ->label('Customer')
                         ->relationship('user','name')
@@ -101,10 +103,14 @@ class OrderForm
               Section::make('Order Items')
              ->schema([
 
-        Repeater::make('items')
+         Repeater::make('items')
             ->relationship()
             ->columns(12)
             ->reactive()
+            ->afterStateUpdated(function ($state, Set $set) {
+                $total = collect($state)->sum('total_amount');
+                $set('total_amount', $total);
+            })
             ->schema([
 
                 Select::make('product_id')
@@ -128,16 +134,21 @@ class OrderForm
                     ->default(1)
                     ->minValue(1)
                     ->columnSpan(2)
-                    ->reactive()
+                    ->lazy()
                     ->afterStateUpdated(function ($state, Set $set, Get $get) {
                         $set('total_amount', $state * $get('unit_amount'));
                     }),
 
                 TextInput::make('unit_amount')
                     ->numeric()
+                    ->required()
                     ->disabled()
                     ->dehydrated()
-                    ->columnSpan(3),
+                    ->columnSpan(3)
+                    ->lazy()
+                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                        $set('total_amount', $state * $get('quantity'));
+                    }),
 
                 TextInput::make('total_amount')
                     ->numeric()
