@@ -4,7 +4,6 @@ namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Models\Product;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -117,16 +116,13 @@ class OrderForm
                             ->deleteAction(
                                 fn (Action $action) => $action->label(''),
                             ),
-                        Placeholder::make('total_amount')
-                            ->label('Total Amount')
-                            ->content(fn ($record, callable $get) => $record
-                                ? '$' . number_format($record->total_amount, 2)
-                                : '$' . number_format((float) $get('total_amount'), 2)
-                            ),
                         TextInput::make('total_amount')
-                            ->hidden()
-                            ->dehydrated()
-                            ->default(0),
+                            ->required()
+                            ->numeric()
+                            ->prefix('$')
+                            ->default(0)
+                            ->readonly()
+                            ->dehydrated(),
                     ]),
             ]);
     }
