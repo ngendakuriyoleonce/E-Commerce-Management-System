@@ -65,8 +65,7 @@ class OrderForm
                                             $quantity = (float) $get('quantity') ?: 1;
                                             $subtotal = $product->price * $quantity;
                                             $set('subtotal', $subtotal);
-                                            $items = $get('items');
-                                            $total = collect($items)->sum('subtotal');
+                                            $total = collect($this->data['items'] ?? [])->sum('subtotal');
                                             $set('total_amount', $total);
                                         }
                                     }),
@@ -81,8 +80,7 @@ class OrderForm
                                         $unitPrice = (float) $get('unit_price');
                                         $subtotal = $state * $unitPrice;
                                         $set('subtotal', $subtotal);
-                                        $items = $get('items');
-                                        $total = collect($items)->sum('subtotal');
+                                        $total = collect($this->data['items'] ?? [])->sum('subtotal');
                                         $set('total_amount', $total);
                                     }),
                                 TextInput::make('unit_price')
@@ -95,8 +93,7 @@ class OrderForm
                                         $quantity = (float) $get('quantity') ?: 1;
                                         $subtotal = $state * $quantity;
                                         $set('subtotal', $subtotal);
-                                        $items = $get('items');
-                                        $total = collect($items)->sum('subtotal');
+                                        $total = collect($this->data['items'] ?? [])->sum('subtotal');
                                         $set('total_amount', $total);
                                     }),
                                 TextInput::make('subtotal')
