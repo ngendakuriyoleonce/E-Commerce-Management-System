@@ -118,9 +118,14 @@ class OrderForm
                          ->modalHeading('New Shipping Address')
                          ->modalSubmitActionLabel('Create')
                          ->form([
+                             TextInput::make('name')
+                                 ->label('Name')
+                                 ->disabled()
+                                 ->dehydrated(false),
+                             TextInput::make('email')
+                                 ->disabled()
+                                 ->dehydrated(false),
                              \Filament\Schemas\Components\Grid::make(2)->schema([
-                                 TextInput::make('first_name')->required()->maxLength(255),
-                                 TextInput::make('last_name')->required()->maxLength(255),
                                  TextInput::make('phone')->required()->tel()->maxLength(255),
                                  Textarea::make('street_address')->required()->columnSpan(2),
                                  TextInput::make('city')->required()->maxLength(255),
@@ -128,10 +133,29 @@ class OrderForm
                                  TextInput::make('zip_code')->required()->numeric()->maxLength(10),
                              ]),
                          ])
+                         ->mountUsing(function (\Filament\Forms\Form $form, $livewire) {
+                             $user = \App\Models\User::find($livewire->data['user_id'] ?? auth()->id());
+                             if ($user) {
+                                 $form->fill([
+                                     'name' => $user->name,
+                                     'email' => $user->email,
+                                 ]);
+                             }
+                         })
                          ->action(function (array $data, $livewire) {
-                             $data['country'] = 'BI';
-                             $data['user_id'] = $livewire->data['user_id'] ?? auth()->id();
-                             $address = Address::create($data);
+                             $user = \App\Models\User::find($livewire->data['user_id'] ?? auth()->id());
+                             $parts = explode(' ', $user?->name ?? '', 2);
+                             $address = Address::create([
+                                 'user_id' => $livewire->data['user_id'] ?? auth()->id(),
+                                 'first_name' => $parts[0] ?? '',
+                                 'last_name' => $parts[1] ?? '',
+                                 'phone' => $data['phone'],
+                                 'street_address' => $data['street_address'],
+                                 'city' => $data['city'],
+                                 'state' => $data['state'],
+                                 'zip_code' => $data['zip_code'],
+                                 'country' => 'BI',
+                             ]);
                              $livewire->data['shipping_address_id'] = $address->id;
                          }),
                  ),
@@ -152,9 +176,14 @@ class OrderForm
                          ->modalHeading('New Billing Address')
                          ->modalSubmitActionLabel('Create')
                          ->form([
+                             TextInput::make('name')
+                                 ->label('Name')
+                                 ->disabled()
+                                 ->dehydrated(false),
+                             TextInput::make('email')
+                                 ->disabled()
+                                 ->dehydrated(false),
                              \Filament\Schemas\Components\Grid::make(2)->schema([
-                                 TextInput::make('first_name')->required()->maxLength(255),
-                                 TextInput::make('last_name')->required()->maxLength(255),
                                  TextInput::make('phone')->required()->tel()->maxLength(255),
                                  Textarea::make('street_address')->required()->columnSpan(2),
                                  TextInput::make('city')->required()->maxLength(255),
@@ -162,10 +191,29 @@ class OrderForm
                                  TextInput::make('zip_code')->required()->numeric()->maxLength(10),
                              ]),
                          ])
+                         ->mountUsing(function (\Filament\Forms\Form $form, $livewire) {
+                             $user = \App\Models\User::find($livewire->data['user_id'] ?? auth()->id());
+                             if ($user) {
+                                 $form->fill([
+                                     'name' => $user->name,
+                                     'email' => $user->email,
+                                 ]);
+                             }
+                         })
                          ->action(function (array $data, $livewire) {
-                             $data['country'] = 'BI';
-                             $data['user_id'] = $livewire->data['user_id'] ?? auth()->id();
-                             $address = Address::create($data);
+                             $user = \App\Models\User::find($livewire->data['user_id'] ?? auth()->id());
+                             $parts = explode(' ', $user?->name ?? '', 2);
+                             $address = Address::create([
+                                 'user_id' => $livewire->data['user_id'] ?? auth()->id(),
+                                 'first_name' => $parts[0] ?? '',
+                                 'last_name' => $parts[1] ?? '',
+                                 'phone' => $data['phone'],
+                                 'street_address' => $data['street_address'],
+                                 'city' => $data['city'],
+                                 'state' => $data['state'],
+                                 'zip_code' => $data['zip_code'],
+                                 'country' => 'BI',
+                             ]);
                              $livewire->data['billing_address_id'] = $address->id;
                          }),
                  ),
