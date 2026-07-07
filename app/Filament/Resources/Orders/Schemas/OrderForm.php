@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Orders\Schemas;
 
+use App\Models\Address;
 use App\Models\Product;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -98,33 +99,59 @@ class OrderForm
 
                  Select::make('shipping_address_id')
                  ->label('Shipping Address')
-                 ->relationship('shippingAddress', 'label')
+                 ->relationship('shippingAddress', 'street_address')
                  ->searchable()
                  ->preload()
                  ->nullable()
-                 ->createOptionForm([
-                     \Filament\Forms\Components\TextInput::make('label')->required(),
-                     \Filament\Forms\Components\TextInput::make('street')->required(),
-                     \Filament\Forms\Components\TextInput::make('city')->required(),
-                     \Filament\Forms\Components\TextInput::make('state'),
-                     \Filament\Forms\Components\TextInput::make('zip_code'),
-                     \Filament\Forms\Components\TextInput::make('country')->default('BI'),
-                 ]),
+                 ->hintAction(
+                     \Filament\Forms\Components\Actions\Action::make('new_shipping')
+                         ->icon(Heroicon::OutlinedPlusCircle)
+                         ->modalHeading('New Shipping Address')
+                         ->modalSubmitActionLabel('Create')
+                         ->form([
+                             TextInput::make('first_name')->required()->maxLength(255),
+                             TextInput::make('last_name')->required()->maxLength(255),
+                             TextInput::make('phone')->required()->tel()->maxLength(255),
+                             Textarea::make('street_address')->required()->columnSpan(2),
+                             TextInput::make('city')->required()->maxLength(255),
+                             TextInput::make('state')->required()->maxLength(255),
+                             TextInput::make('zip_code')->required()->numeric()->maxLength(10),
+                         ])->columns(2)
+                         ->action(function (array $data, $livewire) {
+                             $data['country'] = 'BI';
+                             $data['user_id'] = $livewire->data['user_id'] ?? auth()->id();
+                             $address = Address::create($data);
+                             $livewire->data['shipping_address_id'] = $address->id;
+                         }),
+                 ),
 
                  Select::make('billing_address_id')
                  ->label('Billing Address')
-                 ->relationship('billingAddress', 'label')
+                 ->relationship('billingAddress', 'street_address')
                  ->searchable()
                  ->preload()
                  ->nullable()
-                 ->createOptionForm([
-                     \Filament\Forms\Components\TextInput::make('label')->required(),
-                     \Filament\Forms\Components\TextInput::make('street')->required(),
-                     \Filament\Forms\Components\TextInput::make('city')->required(),
-                     \Filament\Forms\Components\TextInput::make('state'),
-                     \Filament\Forms\Components\TextInput::make('zip_code'),
-                     \Filament\Forms\Components\TextInput::make('country')->default('BI'),
-                 ]),
+                 ->hintAction(
+                     \Filament\Forms\Components\Actions\Action::make('new_billing')
+                         ->icon(Heroicon::OutlinedPlusCircle)
+                         ->modalHeading('New Billing Address')
+                         ->modalSubmitActionLabel('Create')
+                         ->form([
+                             TextInput::make('first_name')->required()->maxLength(255),
+                             TextInput::make('last_name')->required()->maxLength(255),
+                             TextInput::make('phone')->required()->tel()->maxLength(255),
+                             Textarea::make('street_address')->required()->columnSpan(2),
+                             TextInput::make('city')->required()->maxLength(255),
+                             TextInput::make('state')->required()->maxLength(255),
+                             TextInput::make('zip_code')->required()->numeric()->maxLength(10),
+                         ])->columns(2)
+                         ->action(function (array $data, $livewire) {
+                             $data['country'] = 'BI';
+                             $data['user_id'] = $livewire->data['user_id'] ?? auth()->id();
+                             $address = Address::create($data);
+                             $livewire->data['billing_address_id'] = $address->id;
+                         }),
+                 ),
 
                  Textarea::make('notes')
                  ->columnSpanFull()
