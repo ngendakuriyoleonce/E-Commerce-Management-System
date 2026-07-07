@@ -18,7 +18,7 @@ use Filament\Tables\Table;
 
 class AddressRelationManager extends RelationManager
 {
-    protected static string $relationship = 'addresses';
+    protected static string $relationship = 'user.addresses';
 
     public function form(Schema $schema): Schema
     {
