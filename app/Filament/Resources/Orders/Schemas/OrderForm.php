@@ -57,7 +57,7 @@ class OrderForm
                                     ->required()
                                     ->searchable()
                                     ->columnSpan(3)
-                                    ->reactive()
+                                    ->lazy()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $product = Product::find($state);
                                         if ($product) {
@@ -65,6 +65,9 @@ class OrderForm
                                             $quantity = (float) $get('quantity') ?: 1;
                                             $subtotal = $product->price * $quantity;
                                             $set('subtotal', $subtotal);
+                                            $items = $get('items');
+                                            $total = collect($items)->sum('subtotal');
+                                            $set('total_amount', $total);
                                         }
                                     }),
                                 TextInput::make('quantity')
@@ -73,22 +76,28 @@ class OrderForm
                                     ->default(1)
                                     ->minValue(1)
                                     ->columnSpan(2)
-                                    ->reactive()
+                                    ->lazy()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $unitPrice = (float) $get('unit_price');
                                         $subtotal = $state * $unitPrice;
                                         $set('subtotal', $subtotal);
+                                        $items = $get('items');
+                                        $total = collect($items)->sum('subtotal');
+                                        $set('total_amount', $total);
                                     }),
                                 TextInput::make('unit_price')
                                     ->required()
                                     ->numeric()
                                     ->prefix('$')
                                     ->columnSpan(2)
-                                    ->reactive()
+                                    ->lazy()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $quantity = (float) $get('quantity') ?: 1;
                                         $subtotal = $state * $quantity;
                                         $set('subtotal', $subtotal);
+                                        $items = $get('items');
+                                        $total = collect($items)->sum('subtotal');
+                                        $set('total_amount', $total);
                                     }),
                                 TextInput::make('subtotal')
                                     ->required()
