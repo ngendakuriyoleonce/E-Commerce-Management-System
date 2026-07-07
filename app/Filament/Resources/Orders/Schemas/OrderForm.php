@@ -3,127 +3,166 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Models\Product;
-use Filament\Actions\Action;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Str;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Number;
 
 class OrderForm
 {
     public static function configure(Schema $schema): Schema
     {
         return $schema
-            ->columns(2)
             ->components([
-                Section::make('Order Information')
-                    ->columnSpan(2)
-                    ->schema([
+                Group::make()->components([
+                    Section::make('Order Information')->components([
                         Select::make('user_id')
-                            ->label('User')
-                            ->relationship('user', 'name')
-                            ->required()
-                            ->searchable(),
-                        TextInput::make('order_number')
-                            ->required()
-                            ->unique()
-                            ->default('ORD-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4))),
-                        Select::make('status')
-                            ->options([
-                                'pending' => 'Pending',
-                                'processing' => 'Processing',
-                                'completed' => 'Completed',
-                                'cancelled' => 'Cancelled',
-                            ])
-                            ->default('pending')
-                            ->required(),
-                        Textarea::make('notes')
-                            ->nullable()
-                            ->columnSpanFull(),
+                        ->label('Customer')
+                        ->relationship('user','name')
+                        ->preload()
+                        ->searchable()
+                        ->required(),
+                    Select::make('payment_method')
+                    ->options([
+                        'Stripe'=>'Stripe',
+                        'Cod'=>'Cash on delivary'
+                    ])
+                    ->required(),
+
+ Select::make('payment_status')
+                    ->options([
+                        'Pending'=>'Pending',
+                        'Paid'=>'Paid',
+                        'Failed'=>'Failed'
+                    ])
+                    ->default('Pending')
+                    ->required(),
+
+                    ToggleButtons::make('status')
+                    ->inline()
+                    ->default('new')
+                    ->required()
+                    ->options([
+                        'new'=>'new',
+                        'processing'=>'processing',
+                        'shipped'=>'shipped',
+                        'delivered'=>'delivered',
+                        'cancelled'=>'cancelled'
+                    ])
+                    ->colors([
+                        'new' => 'info',
+                        'processing' => 'warning',
+                        'shipped' => 'primary',
+                        'delivered' => 'success',
+                        'cancelled' => 'danger',
+                    ])
+                    ->icons([
+                         'new' => Heroicon::OutlinedSparkles,
+                         'processing' => Heroicon::OutlinedCog6Tooth,
+                         'shipped' => Heroicon::OutlinedTruck,
+                         'delivered' => Heroicon::OutlinedCheckBadge,
+                          'cancelled' => Heroicon::OutlinedXCircle,
                     ]),
-                Section::make('Order Items')
-                    ->description('Products in this order')
+                 Select::make('currency')
+                 ->options([
+                    'BIF'=>'BIF',
+                    'USD'=>'USD',
+                    'EURO'=>'EURO',
+                    'AED'=>'AED'
+                 ])
+                 ->default('BIF')
+                 ->required(),
+
+                  Select::make('shipping_method')
+                 ->options([
+                   'standard' => 'Standard',
+                  'express' => 'Express',
+                  'overnight' => 'Overnight',
+                  'international' => 'International',
+                   'pickup' => 'Local Pickup',
+                 ])
+                 ->default('standard')
+                 ->required(),
+                 Textarea::make('notes')
+                 ->columnSpanFull()
+
+                    ])->columns(2),
+
+              Section::make('Order Items')
+             ->schema([
+
+        Repeater::make('items')
+            ->relationship()
+            ->columns(12)
+            ->reactive()
+            ->schema([
+
+                Select::make('product_id')
+                    ->relationship('product', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->distinct()
+                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                    ->columnSpan(4)
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Set $set) {
+                        $price = Product::find($state)?->price ?? 0;
+
+                        $set('unit_amount', $price);
+                        $set('total_amount', $price);
+                    }),
+
+                TextInput::make('quantity')
+                    ->numeric()
+                    ->required()
+                    ->default(1)
+                    ->minValue(1)
                     ->columnSpan(2)
-                    ->schema([
-                        Repeater::make('items')
-                            ->relationship('items')
-                            ->schema([
-                                Select::make('product_id')
-                                    ->label('Product')
-                                    ->relationship('product', 'name')
-                                    ->required()
-                                    ->searchable()
-                                    ->columnSpan(3)
-                                    ->lazy()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        $product = Product::find($state);
-                                        if ($product) {
-                                            $set('unit_price', $product->price);
-                                            $quantity = (float) $get('quantity') ?: 1;
-                                            $subtotal = $product->price * $quantity;
-                                            $set('subtotal', $subtotal);
-                                            $items = $get('items');
-                                            $total = collect($items)->sum('subtotal');
-                                            $set('total_amount', $total);
-                                        }
-                                    }),
-                                TextInput::make('quantity')
-                                    ->required()
-                                    ->numeric()
-                                    ->default(1)
-                                    ->minValue(1)
-                                    ->columnSpan(2)
-                                    ->lazy()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        $unitPrice = (float) $get('unit_price');
-                                        $subtotal = $state * $unitPrice;
-                                        $set('subtotal', $subtotal);
-                                        $items = $get('items');
-                                        $total = collect($items)->sum('subtotal');
-                                        $set('total_amount', $total);
-                                    }),
-                                TextInput::make('unit_price')
-                                    ->required()
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->columnSpan(2)
-                                    ->lazy()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        $quantity = (float) $get('quantity') ?: 1;
-                                        $subtotal = $state * $quantity;
-                                        $set('subtotal', $subtotal);
-                                        $items = $get('items');
-                                        $total = collect($items)->sum('subtotal');
-                                        $set('total_amount', $total);
-                                    }),
-                                TextInput::make('subtotal')
-                                    ->required()
-                                    ->numeric()
-                                    ->prefix('$')
-                                    ->columnSpan(2)
-                                    ->readonly()
-                                    ->dehydrated(),
-                            ])
-                            ->columns(10)
-                            ->addActionLabel('Add Item')
-                            ->afterStateUpdated(function ($state, callable $set) {
-                                $total = collect($state)->sum('subtotal');
-                                $set('total_amount', $total);
-                            })
-                            ->deleteAction(
-                                fn (Action $action) => $action->label(''),
-                            ),
-                        TextInput::make('total_amount')
-                            ->required()
-                            ->numeric()
-                            ->prefix('$')
-                            ->default(0)
-                            ->readonly()
-                            ->dehydrated(),
-                    ]),
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, Set $set, Get $get) {
+                        $set('total_amount', $state * $get('unit_amount'));
+                    }),
+
+                TextInput::make('unit_amount')
+                    ->numeric()
+                    ->disabled()
+                    ->dehydrated()
+                    ->columnSpan(3),
+
+                TextInput::make('total_amount')
+                    ->numeric()
+                    ->disabled()
+                    ->dehydrated()
+                    ->columnSpan(3),
+            ]),
+
+         Placeholder::make('total_amount_placeholder')
+            ->label('Total Amount')
+            ->content(function(Get $get ,Set $set){
+                $total=0;
+                if(!$repeaters=$get('items')){
+                    return $total;
+                }
+                foreach ($repeaters as $key => $repeater) {
+                    $total+= $get("items.{$key}.total_amount");
+                }
+                $set('total_amount',$total);
+                return Number::currency($total,'BIF');
+            }),
+Hidden::make('total_amount')
+->default(0)
+    ])
+                ])->columnSpanFull()
             ]);
     }
 }

@@ -12,8 +12,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
             $table->string('order_number')->unique();
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
-            $table->decimal('total_amount', 10, 2);
+            $table->string('payment_method')->nullable();
+            $table->string('payment_status')->default('Pending');
+            $table->string('currency')->default('BIF');
+            $table->string('shipping_method')->default('standard');
+            $table->string('status')->default('new');
+            $table->decimal('total_amount', 10, 2)->default(0);
             $table->foreignId('shipping_address_id')->nullable()->constrained('addresses')->nullOnDelete();
             $table->foreignId('billing_address_id')->nullable()->constrained('addresses')->nullOnDelete();
             $table->text('notes')->nullable();

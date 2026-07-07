@@ -22,9 +22,10 @@ class OrdersTable
                 TextColumn::make('status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
-                        'processing' => 'info',
-                        'completed' => 'success',
+                        'new' => 'info',
+                        'processing' => 'warning',
+                        'shipped' => 'primary',
+                        'delivered' => 'success',
                         'cancelled' => 'danger',
                         default => 'gray',
                     }),
