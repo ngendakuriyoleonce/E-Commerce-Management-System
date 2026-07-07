@@ -9,7 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Address extends Model
 {
     protected $fillable = [
-        'user_id', 'label', 'street', 'city', 'state', 'zip_code', 'country', 'is_primary',
+        'user_id', 'first_name', 'last_name', 'phone', 'street_address',
+        'city', 'state', 'zip_code', 'country', 'is_primary',
     ];
 
     public function user(): BelongsTo
