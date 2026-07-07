@@ -10,6 +10,14 @@ class Product extends Model
 {
     protected $fillable = ['name', 'slug', 'description', 'images', 'price', 'is_stock', 'is_active', 'is_featured', 'on_sale', 'category_id', 'brand_id'];
 
+    protected $casts = [
+        'images' => 'array',
+        'is_stock' => 'boolean',
+        'is_active' => 'boolean',
+        'is_featured' => 'boolean',
+        'on_sale' => 'boolean',
+    ];
+
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);

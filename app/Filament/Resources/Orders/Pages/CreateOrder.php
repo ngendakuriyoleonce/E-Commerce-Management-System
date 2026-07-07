@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Orders\Pages;
 
 use App\Filament\Resources\Orders\OrderResource;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Str;
 
 class CreateOrder extends CreateRecord
 {
@@ -11,7 +12,7 @@ class CreateOrder extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $data['total_amount'] = collect($data['items'] ?? [])->sum('subtotal');
+        $data['order_number'] ??= 'ORD-' . now()->format('YmdHis') . '-' . strtoupper(Str::random(4));
 
         return $data;
     }

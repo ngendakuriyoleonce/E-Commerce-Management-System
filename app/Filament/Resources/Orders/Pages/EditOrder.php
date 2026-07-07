@@ -11,8 +11,6 @@ class EditOrder extends EditRecord
 
     protected function mutateFormDataBeforeSave(array $data): array
     {
-        $data['total_amount'] = collect($data['items'] ?? [])->sum('subtotal');
-
         return $data;
     }
 }
