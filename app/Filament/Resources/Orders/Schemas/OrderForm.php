@@ -105,13 +105,7 @@ class OrderForm
                                     ->prefix('$')
                                     ->columnSpan(2)
                                     ->readonly()
-                                    ->dehydrated()
-                                    ->reactive()
-                                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                        $items = $get('items');
-                                        $total = collect($items)->sum('subtotal');
-                                        $set('total_amount', $total);
-                                    }),
+                                    ->dehydrated(),
                             ])
                             ->columns(10)
                             ->addActionLabel('Add Item')
