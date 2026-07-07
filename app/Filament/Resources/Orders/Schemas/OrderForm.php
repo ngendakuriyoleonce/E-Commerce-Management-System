@@ -57,7 +57,7 @@ class OrderForm
                                     ->required()
                                     ->searchable()
                                     ->columnSpan(3)
-                                    ->lazy()
+                                    ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $product = Product::find($state);
                                         if ($product) {
@@ -76,7 +76,7 @@ class OrderForm
                                     ->default(1)
                                     ->minValue(1)
                                     ->columnSpan(2)
-                                    ->lazy()
+                                    ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $unitPrice = (float) $get('unit_price');
                                         $subtotal = $state * $unitPrice;
@@ -90,7 +90,7 @@ class OrderForm
                                     ->numeric()
                                     ->prefix('$')
                                     ->columnSpan(2)
-                                    ->lazy()
+                                    ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $quantity = (float) $get('quantity') ?: 1;
                                         $subtotal = $state * $quantity;
@@ -120,6 +120,7 @@ class OrderForm
                             ->required()
                             ->numeric()
                             ->prefix('$')
+                            ->default(0)
                             ->readonly()
                             ->dehydrated(),
                     ]),
