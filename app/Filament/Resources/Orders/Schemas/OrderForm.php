@@ -34,7 +34,12 @@ class OrderForm
                         ->relationship('user','name')
                         ->preload()
                         ->searchable()
-                        ->required(),
+                        ->required()
+                        ->reactive()
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            $set('shipping_address_id', null);
+                            $set('billing_address_id', null);
+                        }),
                     Select::make('payment_method')
                     ->options([
                         'Stripe'=>'Stripe',
@@ -97,26 +102,32 @@ class OrderForm
                  ->default('standard')
                  ->required(),
 
-                 Select::make('shipping_address_id')
+                  Select::make('shipping_address_id')
                  ->label('Shipping Address')
-                 ->relationship('shippingAddress', 'street_address')
+                 ->options(fn (Get $get) => Address::where('user_id', $get('user_id'))
+                     ->get()
+                     ->mapWithKeys(fn ($address) => [$address->id => $address->first_name . ' ' . $address->last_name . ' - ' . $address->street_address])
+                 )
                  ->searchable()
                  ->preload()
                  ->nullable()
+                 ->reactive()
                  ->hintAction(
-                     \Filament\Forms\Components\Actions\Action::make('new_shipping')
+                     \Filament\Actions\Action::make('new_shipping')
                          ->icon(Heroicon::OutlinedPlusCircle)
                          ->modalHeading('New Shipping Address')
                          ->modalSubmitActionLabel('Create')
                          ->form([
-                             TextInput::make('first_name')->required()->maxLength(255),
-                             TextInput::make('last_name')->required()->maxLength(255),
-                             TextInput::make('phone')->required()->tel()->maxLength(255),
-                             Textarea::make('street_address')->required()->columnSpan(2),
-                             TextInput::make('city')->required()->maxLength(255),
-                             TextInput::make('state')->required()->maxLength(255),
-                             TextInput::make('zip_code')->required()->numeric()->maxLength(10),
-                         ])->columns(2)
+                             \Filament\Schemas\Components\Grid::make(2)->schema([
+                                 TextInput::make('first_name')->required()->maxLength(255),
+                                 TextInput::make('last_name')->required()->maxLength(255),
+                                 TextInput::make('phone')->required()->tel()->maxLength(255),
+                                 Textarea::make('street_address')->required()->columnSpan(2),
+                                 TextInput::make('city')->required()->maxLength(255),
+                                 TextInput::make('state')->required()->maxLength(255),
+                                 TextInput::make('zip_code')->required()->numeric()->maxLength(10),
+                             ]),
+                         ])
                          ->action(function (array $data, $livewire) {
                              $data['country'] = 'BI';
                              $data['user_id'] = $livewire->data['user_id'] ?? auth()->id();
@@ -127,24 +138,30 @@ class OrderForm
 
                  Select::make('billing_address_id')
                  ->label('Billing Address')
-                 ->relationship('billingAddress', 'street_address')
+                 ->options(fn (Get $get) => Address::where('user_id', $get('user_id'))
+                     ->get()
+                     ->mapWithKeys(fn ($address) => [$address->id => $address->first_name . ' ' . $address->last_name . ' - ' . $address->street_address])
+                 )
                  ->searchable()
                  ->preload()
                  ->nullable()
+                 ->reactive()
                  ->hintAction(
-                     \Filament\Forms\Components\Actions\Action::make('new_billing')
+                     \Filament\Actions\Action::make('new_billing')
                          ->icon(Heroicon::OutlinedPlusCircle)
                          ->modalHeading('New Billing Address')
                          ->modalSubmitActionLabel('Create')
                          ->form([
-                             TextInput::make('first_name')->required()->maxLength(255),
-                             TextInput::make('last_name')->required()->maxLength(255),
-                             TextInput::make('phone')->required()->tel()->maxLength(255),
-                             Textarea::make('street_address')->required()->columnSpan(2),
-                             TextInput::make('city')->required()->maxLength(255),
-                             TextInput::make('state')->required()->maxLength(255),
-                             TextInput::make('zip_code')->required()->numeric()->maxLength(10),
-                         ])->columns(2)
+                             \Filament\Schemas\Components\Grid::make(2)->schema([
+                                 TextInput::make('first_name')->required()->maxLength(255),
+                                 TextInput::make('last_name')->required()->maxLength(255),
+                                 TextInput::make('phone')->required()->tel()->maxLength(255),
+                                 Textarea::make('street_address')->required()->columnSpan(2),
+                                 TextInput::make('city')->required()->maxLength(255),
+                                 TextInput::make('state')->required()->maxLength(255),
+                                 TextInput::make('zip_code')->required()->numeric()->maxLength(10),
+                             ]),
+                         ])
                          ->action(function (array $data, $livewire) {
                              $data['country'] = 'BI';
                              $data['user_id'] = $livewire->data['user_id'] ?? auth()->id();
