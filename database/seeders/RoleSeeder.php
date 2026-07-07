@@ -23,13 +23,13 @@ class RoleSeeder extends Seeder
 
         $created = collect();
         foreach ($permissions as $permission) {
-            $created->push(Permission::create(['name' => $permission]));
+            $created->push(Permission::firstOrCreate(['name' => $permission]));
         }
 
-        $admin = Role::create(['name' => 'Admin']);
+        $admin = Role::firstOrCreate(['name' => 'Admin']);
         $admin->givePermissionTo($created);
 
-        $customer = Role::create(['name' => 'Customer']);
+        $customer = Role::firstOrCreate(['name' => 'Customer']);
         $customer->givePermissionTo([
             Permission::findByName('employee-view'),
             Permission::findByName('department-view'),
