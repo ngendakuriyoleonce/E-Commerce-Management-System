@@ -95,6 +95,37 @@ class OrderForm
                  ])
                  ->default('standard')
                  ->required(),
+
+                 Select::make('shipping_address_id')
+                 ->label('Shipping Address')
+                 ->relationship('shippingAddress', 'label')
+                 ->searchable()
+                 ->preload()
+                 ->nullable()
+                 ->createOptionForm([
+                     \Filament\Forms\Components\TextInput::make('label')->required(),
+                     \Filament\Forms\Components\TextInput::make('street')->required(),
+                     \Filament\Forms\Components\TextInput::make('city')->required(),
+                     \Filament\Forms\Components\TextInput::make('state'),
+                     \Filament\Forms\Components\TextInput::make('zip_code'),
+                     \Filament\Forms\Components\TextInput::make('country')->default('BI'),
+                 ]),
+
+                 Select::make('billing_address_id')
+                 ->label('Billing Address')
+                 ->relationship('billingAddress', 'label')
+                 ->searchable()
+                 ->preload()
+                 ->nullable()
+                 ->createOptionForm([
+                     \Filament\Forms\Components\TextInput::make('label')->required(),
+                     \Filament\Forms\Components\TextInput::make('street')->required(),
+                     \Filament\Forms\Components\TextInput::make('city')->required(),
+                     \Filament\Forms\Components\TextInput::make('state'),
+                     \Filament\Forms\Components\TextInput::make('zip_code'),
+                     \Filament\Forms\Components\TextInput::make('country')->default('BI'),
+                 ]),
+
                  Textarea::make('notes')
                  ->columnSpanFull()
 
