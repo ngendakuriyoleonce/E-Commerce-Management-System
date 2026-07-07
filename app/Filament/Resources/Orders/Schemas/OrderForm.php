@@ -3,7 +3,7 @@
 namespace App\Filament\Resources\Orders\Schemas;
 
 use App\Models\Product;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -63,7 +63,11 @@ class OrderForm
                                         if ($product) {
                                             $set('unit_price', $product->price);
                                             $quantity = (float) $get('quantity') ?: 1;
-                                            $set('subtotal', $product->price * $quantity);
+                                            $subtotal = $product->price * $quantity;
+                                            $set('subtotal', $subtotal);
+                                            $items = $get('items');
+                                            $total = collect($items)->sum('subtotal');
+                                            $set('total_amount', $total);
                                         }
                                     }),
                                 TextInput::make('quantity')
@@ -75,7 +79,11 @@ class OrderForm
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $unitPrice = (float) $get('unit_price');
-                                        $set('subtotal', $state * $unitPrice);
+                                        $subtotal = $state * $unitPrice;
+                                        $set('subtotal', $subtotal);
+                                        $items = $get('items');
+                                        $total = collect($items)->sum('subtotal');
+                                        $set('total_amount', $total);
                                     }),
                                 TextInput::make('unit_price')
                                     ->required()
@@ -85,22 +93,35 @@ class OrderForm
                                     ->reactive()
                                     ->afterStateUpdated(function ($state, callable $set, callable $get) {
                                         $quantity = (float) $get('quantity') ?: 1;
-                                        $set('subtotal', $state * $quantity);
+                                        $subtotal = $state * $quantity;
+                                        $set('subtotal', $subtotal);
+                                        $items = $get('items');
+                                        $total = collect($items)->sum('subtotal');
+                                        $set('total_amount', $total);
                                     }),
                                 TextInput::make('subtotal')
                                     ->required()
                                     ->numeric()
                                     ->prefix('$')
                                     ->columnSpan(2)
-                                    ->disabled()
+                                    ->readonly()
                                     ->dehydrated(),
                             ])
                             ->columns(10)
-                            ->gridColumns(10)
                             ->addActionLabel('Add Item')
+                            ->afterStateUpdated(function ($state, callable $set) {
+                                $total = collect($state)->sum('subtotal');
+                                $set('total_amount', $total);
+                            })
                             ->deleteAction(
                                 fn (Action $action) => $action->label(''),
                             ),
+                        TextInput::make('total_amount')
+                            ->required()
+                            ->numeric()
+                            ->prefix('$')
+                            ->readonly()
+                            ->dehydrated(),
                     ]),
             ]);
     }
