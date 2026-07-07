@@ -6,6 +6,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -20,12 +21,21 @@ class ProductsTable
                     ->searchable(),
                 TextColumn::make('slug')
                     ->searchable(),
-                ImageColumn::make('image'),
+                ImageColumn::make('images'),
                 TextColumn::make('price')
                     ->money()
                     ->sortable(),
-                TextColumn::make('stock')
-                    ->numeric()
+                IconColumn::make('is_stock')
+                    ->boolean()
+                    ->sortable(),
+                IconColumn::make('is_active')
+                    ->boolean()
+                    ->sortable(),
+                IconColumn::make('is_featured')
+                    ->boolean()
+                    ->sortable(),
+                IconColumn::make('on_sale')
+                    ->boolean()
                     ->sortable(),
                 TextColumn::make('category.name')
                     ->searchable(),
